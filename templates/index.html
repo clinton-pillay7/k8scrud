@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Contacts Manager</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+
+  :root {
+    --bg: #0e0e11;
+    --surface: #16161a;
+    --border: #2a2a35;
+    --accent: #7c6aff;
+    --accent2: #38d9a9;
+    --danger: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+  }
+
+  header h1 {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  header span {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    background: var(--surface);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+  }
+
+  .panel h2 {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.2rem;
+  }
+
+  .field { margin-bottom: 1rem; }
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  input, textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    padding: 0.55rem 0.75rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, textarea:focus { border-color: var(--accent); }
+
+  .btn-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.2rem;
+  }
+
+  button {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 1.1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+
+  button:active { transform: scale(0.97); }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-success { background: var(--accent2); color: #0e0e11; }
+
+  button:hover { opacity: 0.85; }
+
+  #toast {
+    position: fixed;
+    top: 1.5rem; right: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    display: none;
+    z-index: 999;
+    min-width: 220px;
+  }
+
+  #toast.ok  { border-color: var(--accent2); color: var(--accent2); }
+  #toast.err { border-color: var(--danger);  color: var(--danger);  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  thead tr { border-bottom: 1px solid var(--border); }
+
+  th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 0.5rem 0.8rem 0.8rem;
+    text-align: left;
+  }
+
+  td {
+    padding: 0.7rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: rgba(124,106,255,0.04); }
+
+  .id-badge {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .action-btns { display: flex; gap: 6px; }
+
+  .action-btns button {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>// contacts_manager</h1>
+  <span>Flask + MySQL + Kubernetes</span>
+</header>
+
+<div id="toast"></div>
+
+<div class="layout">
+  <!-- Form Panel -->
+  <div class="panel">
+    <h2 id="form-title">New Contact</h2>
+
+    <input type="hidden" id="edit-id"/>
+
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="f-name" placeholder="Jane Doe"/>
+    </div>
+    <div class="field">
+      <label>Phone</label>
+      <input type="tel" id="f-phone" placeholder="+1 555 000 0000"/>
+    </div>
+    <div class="field">
+      <label>Address</label>
+      <input type="text" id="f-address" placeholder="123 Main St, City"/>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="submitForm()">Save</button>
+      <button class="btn-secondary" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Table Panel -->
+  <div class="panel">
+    <h2>All Contacts <span id="count" style="font-size:0.7rem;color:var(--muted);font-weight:400;"></span></h2>
+    <div id="table-wrap">
+      <div class="empty">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api/contacts';
+
+async function api(method, url, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Request failed');
+  return json;
+}
+
+function toast(msg, ok = true) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = ok ? 'ok' : 'err';
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function clearForm() {
+  ['edit-id','f-name','f-phone','f-address'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('form-title').textContent = 'New Contact';
+}
+
+async function loadContacts() {
+  try {
+    const contacts = await api('GET', API);
+    document.getElementById('count').textContent = `(${contacts.length})`;
+    renderTable(contacts);
+  } catch (e) {
+    document.getElementById('table-wrap').innerHTML = `<div class="empty">⚠ ${e.message}</div>`;
+  }
+}
+
+function renderTable(contacts) {
+  if (!contacts.length) {
+    document.getElementById('table-wrap').innerHTML = '<div class="empty">No contacts yet. Add one!</div>';
+    return;
+  }
+  const rows = contacts.map(c => `
+    <tr>
+      <td><span class="id-badge">#${c.id}</span></td>
+      <td>${esc(c.name)}</td>
+      <td>${esc(c.phone)}</td>
+      <td>${esc(c.address)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-success" onclick="editContact(${c.id},'${esc(c.name)}','${esc(c.phone)}','${esc(c.address)}')">Edit</button>
+          <button class="btn-danger" onclick="deleteContact(${c.id})">Del</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('table-wrap').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Actions</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function editContact(id, name, phone, address) {
+  document.getElementById('edit-id').value = id;
+  document.getElementById('f-name').value = name;
+  document.getElementById('f-phone').value = phone;
+  document.getElementById('f-address').value = address;
+  document.getElementById('form-title').textContent = `Edit Contact #${id}`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function deleteContact(id) {
+  if (!confirm(`Delete contact #${id}?`)) return;
+  try {
+    await api('DELETE', `${API}/${id}`);
+    toast(`Contact #${id} deleted`);
+    loadContacts();
+  } catch (e) { toast(e.message, false); }
+}
+
+async function submitForm() {
+  const id    = document.getElementById('edit-id').value;
+  const name  = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const addr  = document.getElementById('f-address').value.trim();
+
+  if (!name || !phone || !addr) { toast('All fields are required', false); return; }
+
+  try {
+    if (id) {
+      await api('PUT', `${API}/${id}`, { name, phone, address: addr });
+      toast(`Contact #${id} updated`);
+    } else {
+      await api('POST', API, { name, phone, address: addr });
+      toast('Contact created');
+    }
+    clearForm();
+    loadContacts();
+  } catch (e) { toast(e.message, false); }
+}
+
+loadContacts();
+</script>
+</body>
+</html>
