@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: flask-app
-          image: flask-contacts:latest
-          imagePullPolicy: Never      # Use local Minikube Docker image
+          image: clintonpillay7/flask-contacts:latest
+          imagePullPolicy: Always      # Use local Minikube Docker image
           ports:
             - containerPort: 5000
           env:
